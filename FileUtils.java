@@ -1,3 +1,5 @@
+package com.example.adhocdisplay;
+
 /*
  * Copyright (C) 2018 OpenIntents.org
  *
@@ -57,35 +59,26 @@ public class FileUtils {
     /**
      * File and folder comparator. TODO Expose sorting option method
      */
-    public static Comparator<File> sComparator = new Comparator<File>() {
-        @Override
-        public int compare(File f1, File f2) {
-            // Sort alphabetically by lower case, which is much cleaner
-            return f1.getName().toLowerCase().compareTo(
-                    f2.getName().toLowerCase());
-        }
+    public static Comparator<File> sComparator = (f1, f2) -> {
+        // Sort alphabetically by lower case, which is much cleaner
+        return f1.getName().toLowerCase().compareTo(
+                f2.getName().toLowerCase());
     };
     /**
      * File (not directories) filter.
      */
-    public static FileFilter sFileFilter = new FileFilter() {
-        @Override
-        public boolean accept(File file) {
-            final String fileName = file.getName();
-            // Return files only (not directories) and skip hidden files
-            return file.isFile() && !fileName.startsWith(HIDDEN_PREFIX);
-        }
+    public static FileFilter sFileFilter = file -> {
+        final String fileName = file.getName();
+        // Return files only (not directories) and skip hidden files
+        return file.isFile() && !fileName.startsWith(HIDDEN_PREFIX);
     };
     /**
      * Folder (directories) filter.
      */
-    public static FileFilter sDirFilter = new FileFilter() {
-        @Override
-        public boolean accept(File file) {
-            final String fileName = file.getName();
-            // Return directories only and skip hidden directories
-            return file.isDirectory() && !fileName.startsWith(HIDDEN_PREFIX);
-        }
+    public static FileFilter sDirFilter = file -> {
+        final String fileName = file.getName();
+        // Return directories only and skip hidden directories
+        return file.isDirectory() && !fileName.startsWith(HIDDEN_PREFIX);
     };
 
     private FileUtils() {
@@ -116,10 +109,7 @@ public class FileUtils {
      * @return Whether the URI is a local one.
      */
     public static boolean isLocal(String url) {
-        if (url != null && !url.startsWith("http://") && !url.startsWith("https://")) {
-            return true;
-        }
-        return false;
+        return url != null && !url.startsWith("http://") && !url.startsWith("https://");
     }
 
     /**
@@ -137,10 +127,7 @@ public class FileUtils {
      * @return uri
      */
     public static Uri getUri(File file) {
-        if (file != null) {
-            return Uri.fromFile(file);
-        }
-        return null;
+        return (file != null) ? Uri.fromFile(file) : null;
     }
 
     /**
@@ -375,8 +362,9 @@ public class FileUtils {
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
 
             // Return the remote address
-            if (isGooglePhotosUri(uri))
+            if (isGooglePhotosUri(uri)) {
                 return uri.getLastPathSegment();
+            }
 
             return getDataColumn(context, uri, null, null);
         }
@@ -494,7 +482,8 @@ public class FileUtils {
         } else if (url.contains(".txt")) {
             // Text file
             intent.setDataAndType(uri, "text/plain");
-        } else if (url.contains(".3gp") || url.contains(".mpg") || url.contains(".mpeg") || url.contains(".mpe") || url.contains(".mp4") || url.contains(".avi")) {
+        } else if (url.contains(".3gp") || url.contains(".mpg") || url.contains(".mpeg") ||
+                url.contains(".mpe") || url.contains(".mp4") || url.contains(".avi")) {
             // Video files
             intent.setDataAndType(uri, "video/*");
         } else {
@@ -693,7 +682,8 @@ public class FileUtils {
                 filename = file.getName();
             }
         } else {
-            Cursor returnCursor = context.getContentResolver().query(uri, null, null, null, null);
+            Cursor returnCursor = context.getContentResolver().query(uri, null,
+                    null, null, null);
             if (returnCursor != null) {
                 int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                 returnCursor.moveToFirst();
@@ -713,3 +703,4 @@ public class FileUtils {
         return filename.substring(index + 1);
     }
 }
+
