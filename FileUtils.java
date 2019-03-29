@@ -178,6 +178,17 @@ public class FileUtils {
         return getMimeType(file);
     }
 
+      /**
+     * @return The MIME type for the give String Uri.
+     */
+    public static String getMimeType(Context context, String url) {
+        String type = context.getContentResolver().getType(Uri.parse(url));
+        if (type == null) {
+            type = "application/octet-stream";
+        }
+        return type;
+    }
+    
     /**
      * @param uri The Uri to check.
      * @return Whether the Uri authority is local.
@@ -247,6 +258,8 @@ public class FileUtils {
                 final int column_index = cursor.getColumnIndexOrThrow(column);
                 return cursor.getString(column_index);
             }
+        }  catch (Exception e) {
+            Timber.e(e);
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -254,7 +267,7 @@ public class FileUtils {
         return null;
     }
 
-    /**
+     /**
      * Get a file path from a Uri. This will get the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.<br>
@@ -268,6 +281,11 @@ public class FileUtils {
      * @see #getFile(Context, Uri)
      */
     public static String getPath(final Context context, final Uri uri) {
+        String absolutePath = getLocalPath(context, uri);
+        return absolutePath != null ? absolutePath : uri.toString();
+    }
+    
+    private static String getLocalPath(final Context context, final Uri uri) {
 
         if (DEBUG)
             Log.d(TAG + " File -",
@@ -297,6 +315,8 @@ public class FileUtils {
 
                 if ("primary".equalsIgnoreCase(type)) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
+                } else if ("home".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/documents/" + split[1];
                 }
             }
             // DownloadsProvider
